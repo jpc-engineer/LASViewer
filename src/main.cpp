@@ -54,6 +54,19 @@ void uploadVertices(const std::vector<Vertex>& verts) {
     glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(), GL_STATIC_DRAW);
 }
 
+// Generate a default mathematical 3D wave cloud on startup
+std::vector<Vertex> makeDemoCloud() {
+    std::vector<Vertex> verts;
+    for (float x = -10.0f; x <= 10.0f; x += 0.025f) {
+        for (float z = -10.0f; z <= 10.0f; z += 0.25f) {
+            float y = std::sin(x * 0.5f) * std::cos(z * 0.5f) * 2.5f;
+            float r, g, b;
+            elevationToRGB((y + 2.5f) / 5.0f, r, g, b);
+            verts.push_back({x, y, z, r, g, b});
+        }
+    }
+    return verts;
+}
 
 int main() {
     if (!glfwInit()) {
