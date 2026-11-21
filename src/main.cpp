@@ -69,10 +69,6 @@ std::vector<Vertex> makeDemoCloud() {
 }
 
 int main() {
-    if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW\n";
-        return -1;
-    }
 
     // Required for MacOS OpenGL core profile
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -82,18 +78,31 @@ int main() {
 
     GLFWwindow* window = glfwCreateWindow(1280, 720, "LAS Point Cloud Viewer", nullptr, nullptr);
 
-    if (!window) {
-        std::cerr << "Falied to create GLFW window\n";
-        glfwTerminate();
-        return -1;
-    }
+    if (!window) return -1;
 
     glfwMakeContextCurrent(window);
+    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD\n";
-        return -1;
-    }
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_PROGRAM_POINT_SIZE);
+
+    // Compile shaders
+    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vs, 1, &vertexShaderSrc, nullptr);
+    glCompileShader(vs);
+
+    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(vs, 1, &fragmentShaderSrc, nullptr);
+    glCompileShader(fs);
+
+    GLuint shader = glCreateProgram();
+    glAttachShader(shader, vs);
+    glAttachShader(shader, fs);
+    glLinkProgram(shader);
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    // Setup VAO and VBO
 
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << "\n";
 
