@@ -1,7 +1,39 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <vector>
+#include <cmath>
+#include "las_loader.hpp"
+
+// Embedded GLSL Shaders 
+const char* vertexShaderSrc = R"(
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+
+out vec3 vColor;
+uniform mat4 uMVP;
+uniform float uPointSize;
+
+void main() {
+    gl_Position = uMVP * vec4(aPos, 1.0);
+    gl_PointSize = uPointSize;
+    vColor = aColor;
+}
+)";
+
+const char* fragmentShaderSrc = R"(
+#version 330 core
+in vec3 vColor;
+out vec4 FragColor;
+
+void main() {
+    FragColor = vec4(vColor, 1.0);
+}
+)";
 
 int main() {
     if (!glfwInit()) {
