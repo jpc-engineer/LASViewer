@@ -48,6 +48,13 @@ struct CameraState {
 GLuint VBO = 0;
 size_t pointcount = 0;
 
+void uploadVertices(const std::vector<Vertex>& verts) {
+    pointcount = verts.size();
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(), GL_STATIC_DRAW);
+}
+
+
 int main() {
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW\n";
