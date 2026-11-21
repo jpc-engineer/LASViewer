@@ -35,6 +35,19 @@ void main() {
 }
 )";
 
+struct CameraState {
+    glm::vec3 target = glm::vec3(0.0f);
+    float distance = 30.0f;
+    float yaw = 0.6f;
+    float pitch = 0.5f;
+    bool rotating = false;
+    bool panning = false;
+    double lastX = 0.0, lastY = 0.0;
+} cam;
+
+GLuint VBO = 0;
+size_t pointcount = 0;
+
 int main() {
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW\n";
