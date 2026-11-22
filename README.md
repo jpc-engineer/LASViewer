@@ -46,7 +46,7 @@ brew install cmake glfw glm
 ### Compile & Run
 ```bash
 git clone https://github.com/jpc-engineer/LASViewer
-cd lidar-viewer
+cd LASViewer
 
 cmake -B build
 cmake --build build
