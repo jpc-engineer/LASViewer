@@ -1,21 +1,11 @@
-#pragma once
-#include <iostream>
+#include "io/LASLoader.hpp"
 #include <fstream>
-#include <vector>
+#include <iostream>
 #include <cstdint>
 #include <cstring>
 #include <algorithm>
 #include <stdexcept>
-
-struct Vertex {
-    float x, y, z;
-    float r, g, b;
-};
-
-struct PointCloudData {
-    std::vector<Vertex> vertices;
-    float radius = 10.0f;
-};
+#include <cmath>
 
 #pragma pack(push, 1)
 struct LASHeader {
@@ -43,12 +33,11 @@ struct LASHeader {
 
 struct LASPointBase {
     int32_t x, y, z;
-    uint32_t intensity;
+    uint16_t intensity;
 };
 #pragma pack(pop)
 
-// maps normalized elevation [0.0, 1.0] to a blue -> cyan -> green -> yellow -> red gradient
-inline void elevationToRGB(float t, float& r, float& g, float& b) {
+void LASLoader::elevationToRGB(float t, float& r, float& g, float& b) {
     t = std::clamp(t, 0.0f, 1.0f);
     if (t < 0.25f) {
         float k = t / 0.25f;
@@ -65,7 +54,7 @@ inline void elevationToRGB(float t, float& r, float& g, float& b) {
     }
 }
 
-inline PointCloudData loadLAS(const std::string& filepath, size_t maxPoints = 2000000) {
+PointCloudData LASLoader::loadFromFile(const std::string& filepath, size_t maxPoints) {
     std::ifstream file(filepath, std::ios::binary);
     if (!file) throw std::runtime_error("Cannot open file: " + filepath);
 
@@ -80,7 +69,7 @@ inline PointCloudData loadLAS(const std::string& filepath, size_t maxPoints = 20
     if (totalPoints == 0 && header.versionMinor >= 4) {
         file.seekg(247);
         file.read(reinterpret_cast<char*>(&totalPoints), sizeof(uint64_t));
-    } 
+    }
 
     double centerX = (header.minX + header.maxX) * 0.5;
     double centerY = (header.minY + header.maxY) * 0.5;
@@ -110,7 +99,6 @@ inline PointCloudData loadLAS(const std::string& filepath, size_t maxPoints = 20
         float r, g, b;
         elevationToRGB(normZ, r, g, b);
 
-        // Center at (0,0,0) and swap GIS Z-up to OpenGL Y-Up
         result.vertices.push_back({
             static_cast<float>(wx - centerX),
             static_cast<float>(wz - centerZ),
@@ -121,4 +109,18 @@ inline PointCloudData loadLAS(const std::string& filepath, size_t maxPoints = 20
 
     std::cout << "Loaded " << result.vertices.size() << " points (from " << totalPoints << " total)\n";
     return result;
+}
+
+PointCloudData LASLoader::createDemoWave() {
+    PointCloudData data;
+    data.radius = 14.0f;
+    for (float x = -10.0f; x <= 10.0f; x += 0.25f) {
+        for (float z = -10.0f; z <= 10.0f; z += 0.25f) {
+            float y = std::sin(x * 0.5f) * std::cos(z * 0.5f) * 2.5f;
+            float r, g, b;
+            elevationToRGB((y + 2.5f) / 5.0f, r, g, b);
+            data.vertices.push_back({x, y, z, r, g, b});
+        }
+    }
+    return data;
 }
