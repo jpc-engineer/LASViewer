@@ -103,6 +103,20 @@ int main() {
     glDeleteShader(fs);
 
     // Setup VAO and VBO
+    GLuint VAO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    uploadVertices(makeDemoCloud());
+
+    // Mouse and file drop callbacks
 
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << "\n";
 
