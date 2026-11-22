@@ -117,6 +117,28 @@ int main() {
     uploadVertices(makeDemoCloud());
 
     // Mouse and file drop callbacks
+    glfwSetMouseButtonCallback(window, [](GLFWwindow* w, int button, int action, int mods) {
+        if (button == GLFW_MOUSE_BUTTON_LEFT) cam.rotating = (action == GLFW_PRESS);
+        if (button == GLFW_MOUSE_BUTTON_RIGHT) cam.panning = (action == GLFW_PRESS);
+    });
+
+    glfwSetCursorPosCallback(window, [](GLFWwindow* w, double x, double y) {
+        double dx = x - cam.lastX;
+        double dy = y - cam.lastY;
+        cam.lastX = x; cam.lastY = y;
+
+        if (cam.rotating) {
+            cam.yaw -= static_cast<float>(dx) * 0.005f;
+            cam.pitch = std::clamp(cam.pitch + static_cast<float>(dy) * 0.005f, -1.55f, 1.55f);
+        }
+        if (cam.panning) {
+            glm::vec3 forward(std::cos(cam.pitch) * std::sin(cam.yaw), std::sin(cam.pitch), std::cos(cam.pitch) * std::cos(cam.yaw));
+            glm::vec3 right = glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
+            glm::vec3 up = glm::cross(forward, right);
+            cam.target -= right * static_cast<float>(dx) * cam.distance * 0.0012f;
+            cam.target += up * static_cast<float>(dy) * cam.distance * 0.0012f;
+        }
+    });
 
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << "\n";
 
